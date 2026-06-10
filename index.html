@@ -16,8 +16,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Mundial 2026">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="thumbnail.png" type="image/png">
-<link rel="apple-touch-icon" href="thumbnail.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&family=Archivo+Black&display=swap" rel="stylesheet">
@@ -1046,6 +1046,13 @@ function toggleColombia() {
   }
   renderNav();
   renderContent();
+}
+
+// ── SERVICE WORKER (PWA instalable + uso sin conexión) ───────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
