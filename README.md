@@ -6,7 +6,7 @@ Calendario completo del Mundial 2026 (104 partidos, 11 jun – 19 jul) con horar
 
 ## Qué hace
 
-- Navegación por fechas y modo **"Solo Colombia"** (Grupo K).
+- Navegación por fechas y botón **"Equipos"**: selector por grupos (banderas 2×2) para seguir a cualquiera de las 48 selecciones y ver todos sus partidos de corrido — fase de grupos y, según los resultados, su camino en la eliminatoria.
 - Anota los goles debajo de cada equipo; se guardan en el navegador.
 - Calcula las tablas de posiciones (victoria 3 pts, empate 1) con los desempates FIFA: puntos → diferencia de gol → goles a favor → resultado entre sí.
 - Clasifica a dieciseisavos a los 1º, 2º y los **8 mejores terceros**, y propaga los ganadores por el cuadro eliminatorio (con penales en caso de empate) hasta la final.
