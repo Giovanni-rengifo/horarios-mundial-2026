@@ -2,7 +2,9 @@
 // HTML: red primero (las actualizaciones llegan apenas haya conexión, con
 // respaldo en caché para uso sin conexión). Estáticos (banderas, fuentes,
 // íconos): caché primero.
-const CACHE = 'mundial26-v1';
+// Subir la versión al cambiar archivos estáticos (íconos, manifest):
+// fuerza a reinstalar el caché y descartar el anterior.
+const CACHE = 'mundial26-v2';
 const SHELL = ['.', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
