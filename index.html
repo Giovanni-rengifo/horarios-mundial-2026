@@ -417,6 +417,29 @@ table.stand { width: 100%; border-collapse: collapse; font-size: .8rem; }
 .legend strong { color: var(--ink-soft); }
 
 /* ── TEAM PICKER ── */
+.pk-search {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--card);
+  padding: 2px 0 10px;
+  margin-bottom: 4px;
+}
+.pk-search input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  font-family: var(--font);
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+}
+.pk-search input::placeholder { color: var(--muted); font-weight: 500; }
+.pk-search input:focus { border-color: var(--blue); outline: none; }
+.pk-empty { text-align: center; font-size: .82rem; color: var(--muted); padding: 22px 10px; display: none; }
 .pk-g {
   font-family: var(--display);
   font-size: .82rem;
@@ -1111,21 +1134,46 @@ function gotoDate(d) {
 }
 
 // ── TEAM PICKER ──────────────────────────────────────────────────
+function norm(s) { return s.normalize('NFD').split('').filter(ch => { const c = ch.charCodeAt(0); return c < 768 || c > 879; }).join('').toLowerCase(); }
+
 function openPicker() {
   const body = document.getElementById('pickerBody');
-  let html = teamSel
-    ? `<div class="tgrid"><button class="tbtn clear-team" onclick="selectTeam(null)">Ver calendario completo</button></div>`
-    : '';
+  let html = `<div class="pk-search">
+    <input type="search" placeholder="Buscar equipo…" aria-label="Buscar equipo" oninput="filterPicker(this.value)" autocomplete="off">
+  </div>`;
+  if (teamSel) {
+    html += `<div class="tgrid pk-clear"><button class="tbtn clear-team" onclick="selectTeam(null)">Ver calendario completo</button></div>`;
+  }
   for (const L of Object.keys(GROUPS)) {
-    html += `<h3 class="pk-g">Grupo ${L}</h3><div class="tgrid">` +
+    html += `<div class="pk-sec"><h3 class="pk-g">Grupo ${L}</h3><div class="tgrid">` +
       GROUPS[L].map(n => `
-        <button class="tbtn" aria-pressed="${n === teamSel}" onclick="selectTeam('${n}')">
+        <button class="tbtn" data-n="${n}" aria-pressed="${n === teamSel}" onclick="selectTeam('${n}')">
           ${flagImg(n)}<span>${n}</span>
         </button>`).join('') +
-      `</div>`;
+      `</div></div>`;
   }
+  html += `<p class="pk-empty" id="pkEmpty">Ningún equipo coincide con la búsqueda.</p>`;
   body.innerHTML = html;
   document.getElementById('picker').showModal();
+}
+
+function filterPicker(q) {
+  q = norm(q.trim());
+  let any = false;
+  document.querySelectorAll('#pickerBody .pk-sec').forEach(sec => {
+    let vis = 0;
+    sec.querySelectorAll('.tbtn').forEach(b => {
+      const ok = !q || norm(b.dataset.n).includes(q);
+      b.style.display = ok ? 'flex' : 'none';
+      if (ok) vis++;
+    });
+    sec.style.display = vis ? '' : 'none';
+    if (vis) any = true;
+  });
+  const empty = document.getElementById('pkEmpty');
+  if (empty) empty.style.display = any ? 'none' : 'block';
+  const clear = document.querySelector('#pickerBody .pk-clear');
+  if (clear) clear.style.display = q ? 'none' : '';
 }
 
 function selectTeam(n) {
