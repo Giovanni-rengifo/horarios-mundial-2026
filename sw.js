@@ -4,7 +4,7 @@
 // íconos): caché primero.
 // Subir la versión al cambiar archivos estáticos (íconos, manifest):
 // fuerza a reinstalar el caché y descartar el anterior.
-const CACHE = 'mundial26-v2';
+const CACHE = 'mundial26-v3';
 const SHELL = ['.', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
