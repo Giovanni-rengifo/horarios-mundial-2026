@@ -3,7 +3,7 @@
 {
   "name": "Mundial Fifa 2026",
   "schemaVersion": 1,
-  "description": "Calendario completo del Mundial FIFA 2026: 104 partidos, de la fase de grupos (11–27 jun) a la final (19 jul). Horarios en hora colombiana (COT). Permite anotar los goles de cada partido: calcula tablas de posiciones (3 pts victoria, 1 empate), clasifica 1º, 2º y los 8 mejores terceros a dieciseisavos, y propaga ganadores por el cuadro (con penales en empates) hasta coronar al campeón. Cruces y reglas ratificados con FIFA/Wikipedia. Incluye modo \"Solo Colombia\" (Grupo K)."
+  "description": "Calendario completo del Mundial FIFA 2026: 104 partidos, de la fase de grupos (11–27 jun) a la final (19 jul). Horarios en hora colombiana (COT). Permite anotar los goles de cada partido: calcula tablas de posiciones (3 pts victoria, 1 empate), clasifica 1º, 2º y los 8 mejores terceros a dieciseisavos, y propaga ganadores por el cuadro (con penales en empates) hasta coronar al campeón. Cruces y reglas ratificados con FIFA/Wikipedia. Permite seguir a cualquiera de las 48 selecciones (selector por grupos con banderas) viendo todos sus partidos de corrido, con Colombia como protagonista visual."
 }
 </script>
 <html lang="es">
@@ -416,6 +416,64 @@ table.stand { width: 100%; border-collapse: collapse; font-size: .8rem; }
 .legend { font-size: .66rem; color: var(--muted); margin-top: 10px; line-height: 1.55; }
 .legend strong { color: var(--ink-soft); }
 
+/* ── TEAM PICKER ── */
+.pk-g {
+  font-family: var(--display);
+  font-size: .82rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink);
+  margin: 16px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pk-g::after { content: ''; flex: 1; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--yellow) 0 50%, var(--blue) 50% 75%, var(--red) 75%); opacity: .5; }
+.pk-g:first-child { margin-top: 0; }
+.tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tbtn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 6px 10px;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: left;
+  transition: border-color .15s var(--ease), background .15s var(--ease);
+}
+.tbtn:hover { border-color: var(--blue); }
+.tbtn[aria-pressed="true"] { border-color: var(--ink); background: var(--yellow-soft); }
+.tbtn .flag-wrap { width: 30px; height: 21px; }
+.tbtn span { min-width: 0; }
+.tbtn.clear-team { grid-column: 1 / -1; justify-content: center; background: var(--ink); color: var(--yellow); border-color: var(--ink); font-weight: 800; margin-bottom: 4px; }
+
+/* ── TEAM VIEW ── */
+.team-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  animation: rise .22s var(--ease) both;
+}
+.team-hero.col-hero { background: var(--yellow-soft); border-top: 4px solid transparent; border-image: linear-gradient(90deg, var(--yellow) 0 50%, var(--blue) 50% 75%, var(--red) 75%) 1; border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.team-hero .flag-wrap { width: 52px; height: 37px; }
+.th-txt { flex: 1; min-width: 0; }
+.th-txt strong { font-family: var(--display); font-weight: 400; font-size: 1.15rem; text-transform: uppercase; color: var(--ink); display: block; line-height: 1.1; }
+.th-txt span { font-size: .72rem; font-weight: 600; color: var(--muted); }
+.team-hero .g-chip { flex-shrink: 0; }
+.team-note { text-align: center; font-size: .74rem; color: var(--muted); padding: 4px 20px 0; line-height: 1.5; }
+
 /* ── EMPTY STATE ── */
 .empty {
   text-align: center;
@@ -463,9 +521,8 @@ table.stand { width: 100%; border-collapse: collapse; font-size: .8rem; }
       <h1>Mundial 2026</h1>
       <p>Grupos a final · 104 partidos<br>Hora Colombia (COT)</p>
     </div>
-    <button class="col-pill" id="colBtn" aria-pressed="false" onclick="toggleColombia()">
-      <img src="https://flagcdn.com/w40/co.png" alt="" width="22" height="15" onerror="this.remove()">
-      <span>Solo Colombia</span>
+    <button class="col-pill" id="teamBtn" aria-pressed="false" onclick="openPicker()" aria-label="Elegir equipo a seguir">
+      <span>Equipos</span>
     </button>
   </header>
   <nav class="date-nav" aria-label="Fechas">
@@ -483,6 +540,14 @@ table.stand { width: 100%; border-collapse: collapse; font-size: .8rem; }
     <button class="dlg-close" onclick="document.getElementById('dlg').close()" aria-label="Cerrar">✕</button>
   </div>
   <div class="dlg-body" id="dlgBody"></div>
+</dialog>
+
+<dialog id="picker" aria-label="Elegir equipo">
+  <div class="dlg-head">
+    <h2>Elige tu equipo</h2>
+    <button class="dlg-close" onclick="document.getElementById('picker').close()" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="dlg-body" id="pickerBody"></div>
 </dialog>
 
 <script>
@@ -820,7 +885,9 @@ function colDatesNow(bracket) {
 
 // ── STATE ─────────────────────────────────────────────────────────
 let activeDate = null;
-let colOnly = false;
+let teamSel = null;   // equipo seguido (null = calendario completo)
+try { teamSel = localStorage.getItem('mundial26-team') || null; } catch (e) {}
+if (teamSel && !FC[teamSel]) teamSel = null;
 let offset = 0;
 const VISIBLE = 7;
 
@@ -835,7 +902,7 @@ function renderNav() {
     const active = d === activeDate;
     const hasCOL = colDates.has(d);
     const pill = document.createElement('button');
-    pill.className = 'd-pill' + (colOnly && !hasCOL ? ' dim' : '');
+    pill.className = 'd-pill';
     pill.setAttribute('aria-pressed', active);
     pill.setAttribute('aria-label', fmtDate(d) + (hasCOL ? ' (juega Colombia)' : ''));
     pill.innerHTML = `<span class="dn">${dt.getDate()}</span><span class="dm">${MON_S[dt.getMonth()]}</span><span class="tri${hasCOL ? '' : ' off'}"></span>`;
@@ -902,63 +969,72 @@ function cardHTML(m) {
     </div>`;
 }
 
+function dayBlock(d, ms, today) {
+  const dt = new Date(d+'T12:00:00');
+  const phase = PH_BY_DATE[d];
+  const block = document.createElement('section');
+  block.className = 'day-block';
+  block.innerHTML = `
+    <h2 class="day-h">
+      <span class="d-big">${DAYS[dt.getDay()]} ${dt.getDate()}</span>
+      <span class="d-mon">${MONTHS[dt.getMonth()]}</span>
+      ${phase ? `<span class="phase-tag">${PHASES[phase]}</span>` : ''}
+      ${d === today ? '<span class="today-tag">HOY</span>' : ''}
+      <span class="d-count">${ms.length} ${ms.length === 1 ? 'partido' : 'partidos'}</span>
+    </h2>
+    <div class="match-list">${ms.map(cardHTML).join('')}</div>`;
+  return block;
+}
+
+function renderTeamBtn() {
+  const b = document.getElementById('teamBtn');
+  b.setAttribute('aria-pressed', !!teamSel);
+  b.innerHTML = teamSel
+    ? `<img src="https://flagcdn.com/w40/${FC[teamSel]}.png" alt="" width="22" height="15" onerror="this.remove()"><span>${teamSel}</span>`
+    : '<span>Equipos</span>';
+}
+
+function renderTeamView(el, bracket, today) {
+  const L = Object.keys(GROUPS).find(k => GROUPS[k].includes(teamSel));
+  const hero = document.createElement('div');
+  hero.className = 'team-hero' + (teamSel === 'Colombia' ? ' col-hero' : '');
+  hero.innerHTML = `
+    ${flagImg(teamSel)}
+    <div class="th-txt"><strong>${teamSel}</strong><span>Grupo ${L} · todos sus partidos</span></div>
+    <button class="g-chip" onclick="openGroup('${L}')">Tabla ›</button>`;
+  el.appendChild(hero);
+  allDates.forEach(d => {
+    const ms = dayMatches(d, bracket).filter(x => x.hN === teamSel || x.aN === teamSel);
+    if (ms.length) el.appendChild(dayBlock(d, ms, today));
+  });
+  const note = document.createElement('p');
+  note.className = 'team-note';
+  note.textContent = standings(L).complete
+    ? 'Sus cruces de eliminatoria aparecen y se actualizan solos según los resultados que anotes.'
+    : `Completa los marcadores del Grupo ${L} (y del resto de grupos) para ver su camino en la eliminatoria.`;
+  el.appendChild(note);
+}
+
 function renderContent() {
   const el = document.getElementById('content');
   el.innerHTML = '';
   const today = bogotaToday();
   const bracket = buildBracket();
-  const dates = activeDate ? [activeDate] : allDates;
+  renderTeamBtn();
+  document.querySelector('.date-nav').style.display = teamSel ? 'none' : 'flex';
 
+  if (teamSel) { renderTeamView(el, bracket, today); return; }
+
+  const dates = activeDate ? [activeDate] : allDates;
   let rendered = 0;
   dates.forEach(d => {
-    let ms = dayMatches(d, bracket);
-    if (colOnly) ms = ms.filter(isColM);
+    const ms = dayMatches(d, bracket);
     if (!ms.length) return;
-
-    const dt = new Date(d+'T12:00:00');
-    const isToday = d === today;
-    const phase = PH_BY_DATE[d];
-    const block = document.createElement('section');
-    block.className = 'day-block';
-
-    block.innerHTML = `
-      <h2 class="day-h">
-        <span class="d-big">${DAYS[dt.getDay()]} ${dt.getDate()}</span>
-        <span class="d-mon">${MONTHS[dt.getMonth()]}</span>
-        ${phase ? `<span class="phase-tag">${PHASES[phase]}</span>` : ''}
-        ${isToday ? '<span class="today-tag">HOY</span>' : ''}
-        <span class="d-count">${ms.length} ${ms.length === 1 ? 'partido' : 'partidos'}</span>
-      </h2>
-      <div class="match-list">${ms.map(cardHTML).join('')}</div>`;
-    el.appendChild(block);
+    el.appendChild(dayBlock(d, ms, today));
     rendered++;
   });
-
   if (!rendered) {
-    const colDates = colDatesNow(bracket);
-    if (colOnly && activeDate) {
-      const sorted = [...colDates].sort();
-      const next = sorted.find(d => d > activeDate);
-      const target = next || sorted[sorted.length - 1];
-      const m = target && dayMatches(target, bracket).find(isColM);
-      if (m) {
-        const rival = m.hN === 'Colombia' ? (m.aN || m.aL) : (m.hN || m.hL);
-        el.innerHTML = `
-          <div class="empty">
-            <h3>Colombia no juega este día</h3>
-            <p>${next ? 'Próximo partido' : 'Último partido'}: <strong>vs ${rival}</strong><br>${fmtDate(target)} · ${to12Plain(m.t)}</p>
-            <button onclick="gotoDate('${target}')">Ver ese día</button>
-          </div>`;
-      } else {
-        el.innerHTML = `
-          <div class="empty">
-            <h3>Colombia no juega este día</h3>
-            <p>Si Colombia avanza en el cuadro, sus próximos partidos aparecerán aquí. Anota los goles de la fase de grupos para definir los clasificados.</p>
-          </div>`;
-      }
-    } else {
-      el.innerHTML = '<div class="empty"><h3>Sin partidos</h3><p>No hay partidos para mostrar este día.</p></div>';
-    }
+    el.innerHTML = '<div class="empty"><h3>Sin partidos</h3><p>No hay partidos para mostrar este día.</p></div>';
   }
 }
 
@@ -1034,18 +1110,34 @@ function gotoDate(d) {
   renderContent();
 }
 
-function toggleColombia() {
-  colOnly = !colOnly;
-  const btn = document.getElementById('colBtn');
-  btn.setAttribute('aria-pressed', colOnly);
-  const colDates = colDatesNow(buildBracket());
-  if (colOnly && activeDate && !colDates.has(activeDate)) {
-    const sorted = [...colDates].sort();
-    const next = sorted.find(d => d >= activeDate) || sorted[sorted.length - 1];
-    if (next) { gotoDate(next); return; }
+// ── TEAM PICKER ──────────────────────────────────────────────────
+function openPicker() {
+  const body = document.getElementById('pickerBody');
+  let html = teamSel
+    ? `<div class="tgrid"><button class="tbtn clear-team" onclick="selectTeam(null)">Ver calendario completo</button></div>`
+    : '';
+  for (const L of Object.keys(GROUPS)) {
+    html += `<h3 class="pk-g">Grupo ${L}</h3><div class="tgrid">` +
+      GROUPS[L].map(n => `
+        <button class="tbtn" aria-pressed="${n === teamSel}" onclick="selectTeam('${n}')">
+          ${flagImg(n)}<span>${n}</span>
+        </button>`).join('') +
+      `</div>`;
   }
+  body.innerHTML = html;
+  document.getElementById('picker').showModal();
+}
+
+function selectTeam(n) {
+  teamSel = n;
+  try {
+    if (n) localStorage.setItem('mundial26-team', n);
+    else localStorage.removeItem('mundial26-team');
+  } catch (e) {}
+  document.getElementById('picker').close();
   renderNav();
   renderContent();
+  window.scrollTo({ top: 0 });
 }
 
 // ── SERVICE WORKER (PWA instalable + uso sin conexión) ───────────
