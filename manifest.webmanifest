@@ -1,0 +1,13 @@
+{
+  "name": "Mundial FIFA 2026 · Hora Colombia",
+  "short_name": "Mundial 2026",
+  "description": "Calendario completo del Mundial 2026 en hora colombiana, con marcadores y cuadro eliminatorio.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f5f3ec",
+  "theme_color": "#f0cf3c",
+  "lang": "es",
+  "icons": [
+    { "src": "thumbnail.png", "sizes": "640x747", "type": "image/png", "purpose": "any" }
+  ]
+}
